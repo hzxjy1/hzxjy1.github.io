@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="en" theme-mode="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>使用qemu移植实体机内的linux系统 | Beyond Here</title><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="preload" as="font" crossorigin="anonymous" href="/font/Bender.ttf"><link rel="preload" as="font" crossorigin="anonymous" href="/font/BenderLight.woff2"><link rel="preload" as="font" crossorigin="anonymous" href="/font/JetBrainsMono-Regular.woff2"><link rel="stylesheet" href="/css/arknights.css"><style>@font-face {
+  font-family: Bender;
+  src: local('Bender'), url("/font/Bender.ttf"), url("/font/Bender.otf");
+}
+@font-face {
+  font-family: BenderLight;
+  src: local('BenderLight'), url("/font/BenderLight.ttf");
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: local('JetBrains Mono'), url('/font/JetBrainsMono-Regular.woff2') format('woff2');
+}
+</style><meta name="page-config" content="{&quot;code_fold&quot;:null}"><script class="pjax-js">var config = {"root":"/","code_fold":15,"search":{"preload":false,"activeHolder":"Enter here","blurHolder":"Search","noResult":"Data \"$0\" not found"},"code":{"codeInfo":"$0 - $1 lines","copy":"copy"}};
+var page_config = {
+  code_fold: null
+};
+function updatePageConfig() {
+  var newPageConfig = document.querySelector('meta[name="page-config"]');
+  if (newPageConfig) {
+    page_config = JSON.parse(newPageConfig.content);
+  }
+}
+document.addEventListener('pjax:complete', function() { updatePageConfig(); });
+updatePageConfig();</script><link type="text/css" rel="stylesheet" href="/lib/encrypt/hbe.style.css"><script src="//unpkg.com/mermaid@10.5.0/dist/mermaid.min.js"></script><link type="text/css" rel="stylesheet" href="//unpkg.com/lightgallery@2.7.1/css/lightgallery.css"><link type="text/css" rel="stylesheet" href="//unpkg.com/lightgallery@2.7.1/css/lg-zoom.css"><link type="text/css" rel="stylesheet" href="//unpkg.com/lightgallery@2.7.1/css/lg-thumbnail.css"><link type="text/css" rel="stylesheet" href="/lib/fontawesome/css/all.min.css"><script>if (window.localStorage.getItem('theme-mode') === 'light')
+ document.documentElement.setAttribute('theme-mode', 'light')
+if (window.localStorage.getItem('theme-mode') === 'dark')
+ document.documentElement.setAttribute('theme-mode', 'dark')</script><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/font/BenderLight.woff2") format('woff2');
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><style>:root {
+ --dark-background: url('https://ak.hypergryph.com/assets/index/images/ak/pc/bk.jpg');
+ --light-background: url('/img/bk.jpg');
+ --theme-encrypt-confirm: 'confirm'
+}</style><script defer src="/js/arknights.js"></script><script defer src="/js/search.js"></script><script defer type="module">import mermaid from '//unpkg.com/mermaid@10.5.0/dist/mermaid.esm.mjs';
+window.mermaid = mermaid;
+code.paintMermaid();
+</script><script async src="//unpkg.com/lightgallery@2.7.1/lightgallery.min.js"></script><script async src="//unpkg.com/lightgallery@2.7.1/plugins/zoom/lg-zoom.min.js"></script><script async src="//unpkg.com/lightgallery@2.7.1/plugins/thumbnail/lg-thumbnail.min.js"></script><script async src="/lib/encrypt/hbe.js"></script><script async src="/js/pjax.js"></script><script class="pjax-js">reset= () => {document.querySelector('.lg-container')?.remove()
+lightGallery(document.getElementById('post-bg'), {
+  plugins: [lgZoom,lgThumbnail],
+  selector: '.item-img'})}</script><script>window.addEventListener("load",() => {pjax = new Pjax({
+ cacheBust: false,
+ selectors: ['title','article','#aside-block','.pjax-js','data-pjax','.busuanzi','meta[name=page-config]'],
+ switches: {'article': Pjax.switches.sideBySide},
+ switchesOptions: {
+   'article': {
+     classNames: {
+       remove: "pjax-out",
+       add: "pjax-in"
+     }
+   }
+ }
+});
+document.addEventListener("pjax:complete", reset);reset()})</script><script class="pjax-js">reset= () => {document.querySelector('.lg-container')?.remove()
+lightGallery(document.getElementById('post-bg'), {
+  plugins: [lgZoom,lgThumbnail],
+  selector: '.item-img'})}</script><script>window.addEventListener("load",() => {pjax = new Pjax({
+ cacheBust: false,
+ selectors: ['title','article','#aside-block','.pjax-js','meta[name=page-config]'],
+ switches: {'article': Pjax.switches.sideBySide},
+ switchesOptions: {
+   'article': {
+     classNames: {
+       remove: "pjax-out",
+       add: "pjax-in"
+     }
+   }
+ }
+});
+document.addEventListener("pjax:complete", reset);reset()})</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="loading" style="opacity: 0;"><div class="loadingBar left"></div><div class="loadingBar right"></div></div><main><header class="closed"><div class="navBtn"><i class="navBtnIcon"><span class="navBtnIconBar"></span><span class="navBtnIconBar"></span><span class="navBtnIconBar"></span></i></div><nav><div class="navItem" id="search-header"><span class="navItemTitle"><input autocomplete="off" autocorrect="off" autocapitalize="none" placeholder="Search" spellcheck="false" maxlength="50" type="text" id="search-input"></span></div><div class="navItem" id="search-holder"></div><div class="search-popup" tabindex="0"><div id="search-result"></div></div><ol class="navContent"><li class="navItem"><a class="navBlock" href="/"><span class="navItemTitle">Home</span></a></li><li class="navItem" matchdata="categories,tags"><a class="navBlock" href="/archives/"><span class="navItemTitle">Archives</span></a></li></ol></nav></header><article><div id="post-bg"><div id="post-title"><h1>使用qemu移植实体机内的linux系统</h1><div id="post-info"><span>First Post: <div class="control"><time datetime="2025-07-08T09:26:28.000Z" id="date"> 2025-07-08</time></div></span><br><span>Last Update: <div class="control"><time datetime="2025-07-08T11:09:32.551Z" id="updated"> 2025-07-08</time></div></span></div></div><hr><div id="post-content"><h1 id="序"><a href="#序" class="headerlink" title="序"></a>序</h1><p>有个四年前学生时代安装的Archlinux，已经大半年没用了，于是准备把它挪到服务器上的虚拟机中供起来</p>
+<h1 id="安装软件依赖"><a href="#安装软件依赖" class="headerlink" title="安装软件依赖"></a>安装软件依赖</h1><p>需要在宿主机内安装以下软件</p>
+<p>Debian&#x2F;Ubuntu</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update &amp;&amp; sudo apt install qemu-system-x86 qemu-utils btrfs-progs rsync util-linux</span><br></pre></td></tr></table></figure>
+
+<p>Archlinux</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -S qemu btrfs-progs rsync util-linux grub</span><br></pre></td></tr></table></figure>
+
+<h1 id="启动qemu虚拟机"><a href="#启动qemu虚拟机" class="headerlink" title="启动qemu虚拟机"></a>启动qemu虚拟机</h1><p>下载Archlinux官方qemu镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://mirrors.aliyun.com/archlinux/images/v20250525.354894/Arch-Linux-x86_64-basic.qcow2</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建议将调整url的日期以下载最近构建的镜像</span></span><br></pre></td></tr></table></figure>
+
+<p>挂载qemu镜像至文件夹</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">modprobe nbd max_part=16</span><br><span class="line">qemu-nbd -c /dev/nbd0 Arch-Linux-x86_64-basic.qcow2</span><br><span class="line">mkdir mount</span><br><span class="line">mount /dev/nbd0p3 mount</span><br></pre></td></tr></table></figure>
+
+<p>由于qemu默认通过串口输出到控制台，需要临时调整内核的boot参数，才能使用shell</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd mount</span><br><span class="line">vi boot/grub/grub.cfg</span><br></pre></td></tr></table></figure>
+<p>找到menuentry开头的选项，在内核参数中添加“console&#x3D;ttyS0 ”</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">menuentry &#x27;Arch Linux&#x27; --class arch --class gnu-linux --class gnu --class os $menuentry_id_option &#x27;gnulinux-simple-309ba2b9-a4bc-4e9d-9874-9662c28259f0&#x27; &#123;</span><br><span class="line">        load_video</span><br><span class="line">        set gfxpayload=keep</span><br><span class="line">        insmod gzio</span><br><span class="line">        insmod part_gpt</span><br><span class="line">        insmod btrfs</span><br><span class="line">        search --no-floppy --fs-uuid --set=root 309ba2b9-a4bc-4e9d-9874-9662c28259f0</span><br><span class="line">        echo    &#x27;Loading Linux linux ...&#x27;</span><br><span class="line">        linux   /boot/vmlinuz-linux root=UUID=309ba2b9-a4bc-4e9d-9874-9662c28259f0 rw net.ifnames=0 rootflags=compress-force=zstd</span><br><span class="line">        echo    &#x27;Loading initial ramdisk ...&#x27;</span><br><span class="line">        initrd  /boot/initramfs-linux.img</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更改后的配置如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">menuentry &#x27;Arch Linux&#x27; --class arch --class gnu-linux --class gnu --class os $menuentry_id_option &#x27;gnulinux-simple-309ba2b9-a4bc-4e9d-9874-9662c28259f0&#x27; &#123;</span><br><span class="line">        load_video</span><br><span class="line">        set gfxpayload=keep</span><br><span class="line">        insmod gzio</span><br><span class="line">        insmod part_gpt</span><br><span class="line">        insmod btrfs</span><br><span class="line">        search --no-floppy --fs-uuid --set=root 309ba2b9-a4bc-4e9d-9874-9662c28259f0</span><br><span class="line">        echo    &#x27;Loading Linux linux ...&#x27;</span><br><span class="line">        linux   /boot/vmlinuz-linux root=UUID=309ba2b9-a4bc-4e9d-9874-9662c28259f0 console=ttyS0 rw net.ifnames=0 rootflags=compress-force=zstd</span><br><span class="line">        echo    &#x27;Loading initial ramdisk ...&#x27;</span><br><span class="line">        initrd  /boot/initramfs-linux.img</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解除挂载</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">umount mount</span><br><span class="line">qemu-nbd -d /dev/nbd0</span><br></pre></td></tr></table></figure>
+
+<p>并使用以下命令启动qemu</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 \</span><br><span class="line">    -nographic \</span><br><span class="line">    -enable-kvm \</span><br><span class="line">    -m 2G \</span><br><span class="line">    -smp 4 \</span><br><span class="line">    -drive file=Arch-Linux-x86_64-basic.qcow2,format=qcow2,if=virtio \</span><br><span class="line">    -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd  </span><br></pre></td></tr></table></figure>
+
+<p>archlinux qcow2镜像的默认账户密码为： arch arch</p>
+<h1 id="更改分区容量"><a href="#更改分区容量" class="headerlink" title="更改分区容量"></a>更改分区容量</h1><p>扩容qcow2分区</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img resize Arch-Linux-x86_64-basic.qcow2 512G</span><br></pre></td></tr></table></figure>
+
+<p>使用qemu-info查看是否生效</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img info Arch-Linux-x86_64-basic.qcow2</span><br></pre></td></tr></table></figure>
+
+<p>后续需要将内部的rootfs分区删除并重新创建一个扩充至镜像大小新分区，建议在操作前备份镜像</p>
+<p>输入命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu-nbd -c /dev/nbd0 Arch-Linux-x86_64-basic.qcow2</span><br><span class="line">fdisk /dev/nbd0</span><br></pre></td></tr></table></figure>
+
+<p>进入fdisk的交互界面后，依次输入以下命令，注意不要略过空格</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">p</span><br><span class="line">d</span><br><span class="line">3</span><br><span class="line">n</span><br><span class="line">3</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">n</span><br><span class="line">w</span><br></pre></td></tr></table></figure>
+
+<p>以下为fdisk操作日志作为参考</p>
+<details>
+<summary>点击展开/折叠</summary>
+
+<p>sudo fdisk &#x2F;dev&#x2F;nbd8</p>
+<p>Welcome to fdisk (util-linux 2.38.1).<br>Changes will remain in memory only, until you decide to write them.<br>Be careful before using the write command.</p>
+<p>GPT PMBR size mismatch (83886079 !&#x3D; 268435455) will be corrected by write.<br>The backup GPT table is not on the end of the device. This problem will be corrected by write.</p>
+<p>Command (m for help): p</p>
+<p>Disk &#x2F;dev&#x2F;nbd8: 128 GiB, 137438953472 bytes, 268435456 sectors<br>Units: sectors of 1 * 512 &#x3D; 512 bytes<br>Sector size (logical&#x2F;physical): 512 bytes &#x2F; 512 bytes<br>I&#x2F;O size (minimum&#x2F;optimal): 512 bytes &#x2F; 512 bytes<br>Disklabel type: gpt<br>Disk identifier: A80982E5-6BC2-4FC8-8A06-6C903827E249</p>
+<p>Device       Start      End  Sectors  Size Type<br>&#x2F;dev&#x2F;nbd8p1   2048     4095     2048    1M BIOS boot<br>&#x2F;dev&#x2F;nbd8p2   4096   618495   614400  300M EFI System<br>&#x2F;dev&#x2F;nbd8p3 618496 83884031 83265536 39.7G Linux root (x86-64)</p>
+<p>Command (m for help): d<br>Partition number (1-3, default 3): 3</p>
+<p>Partition 3 has been deleted.</p>
+<p>Command (m for help): p<br>Disk &#x2F;dev&#x2F;nbd8: 128 GiB, 137438953472 bytes, 268435456 sectors<br>Units: sectors of 1 * 512 &#x3D; 512 bytes<br>Sector size (logical&#x2F;physical): 512 bytes &#x2F; 512 bytes<br>I&#x2F;O size (minimum&#x2F;optimal): 512 bytes &#x2F; 512 bytes<br>Disklabel type: gpt<br>Disk identifier: A80982E5-6BC2-4FC8-8A06-6C903827E249</p>
+<p>Device      Start    End Sectors  Size Type<br>&#x2F;dev&#x2F;nbd8p1  2048   4095    2048    1M BIOS boot<br>&#x2F;dev&#x2F;nbd8p2  4096 618495  614400  300M EFI System</p>
+<p>Command (m for help): n<br>Partition number (3-128, default 3): 3<br>First sector (618496-268435422, default 618496):<br>Last sector, +&#x2F;-sectors or +&#x2F;-size{K,M,G,T,P} (618496-268435422, default 268433407):</p>
+<p>Created a new partition 3 of type ‘Linux filesystem’ and of size 127.7 GiB.<br>Partition #3 contains a btrfs signature.</p>
+<p>Do you want to remove the signature? [Y]es&#x2F;[N]o: n</p>
+<p>Command (m for help): p</p>
+<p>Disk &#x2F;dev&#x2F;nbd8: 128 GiB, 137438953472 bytes, 268435456 sectors<br>Units: sectors of 1 * 512 &#x3D; 512 bytes<br>Sector size (logical&#x2F;physical): 512 bytes &#x2F; 512 bytes<br>I&#x2F;O size (minimum&#x2F;optimal): 512 bytes &#x2F; 512 bytes<br>Disklabel type: gpt<br>Disk identifier: A80982E5-6BC2-4FC8-8A06-6C903827E249</p>
+<p>Device       Start       End   Sectors   Size Type<br>&#x2F;dev&#x2F;nbd8p1   2048      4095      2048     1M BIOS boot<br>&#x2F;dev&#x2F;nbd8p2   4096    618495    614400   300M EFI System<br>&#x2F;dev&#x2F;nbd8p3 618496 268433407 267814912 127.7G Linux filesystem</p>
+<p>Command (m for help): w<br>The partition table has been altered.<br>Calling ioctl() to re-read partition table.<br>Syncing disks.</p>
+</details>
+
+
+
+<p>需要注意的是，新分区需要和被删除的旧分区的起始扇区一致，否则会导致分区的uuid变化并引发系统启动故障</p>
+<p>如果出现以下警告请忽略，fdisk会自动进行修复</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GPT PMBR size mismatch (83886079 != 1073741823) will be corrected by write.</span><br><span class="line">The backup GPT table is not on the end of the device. This problem will be corrected by write.</span><br></pre></td></tr></table></figure>
+
+<p>挂载新分区，使用btrfs命令扩充文件系统</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/nbd0p3 mount</span><br><span class="line">btrfs filesystem show /dev/nbd0p3</span><br><span class="line">btrfs filesystem resize max mount/ # 这个mount/是镜像挂载的文件夹</span><br><span class="line">btrfs filesystem show /dev/nbd0p3</span><br></pre></td></tr></table></figure>
+
+<p>通过对比btrfs filesystem show命令的size字段的判断是否扩容成功</p>
+<h1 id="复制rootfs（如果需要的话）"><a href="#复制rootfs（如果需要的话）" class="headerlink" title="复制rootfs（如果需要的话）"></a>复制rootfs（如果需要的话）</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rm -rf mount/*</span><br><span class="line">sudo rsync -aHAX --info=progress2 --no-inc-recursive --inplace your_rootfs/ mount/</span><br></pre></td></tr></table></figure>
+
+<h1 id="固化内核启动参数"><a href="#固化内核启动参数" class="headerlink" title="固化内核启动参数"></a>固化内核启动参数</h1><p>卸载qcow2镜像的挂载后，按先前提到的qemu-system-x86_64命令启动虚拟机，进入shell界面后输入：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/default/grub</span><br></pre></td></tr></table></figure>
+
+<p>在GRUB_CMDLINE_LINUX_DEFAULT添加console&#x3D;ttyS0</p>
+<p>生成grub.cfg</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grub-mkconfig -o /boot/grub/grub.cfg</span><br></pre></td></tr></table></figure>
+
+<p>查看是否更改成功</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &quot;console=ttyS0&quot; /boot/grub/grub.cfg</span><br></pre></td></tr></table></figure>
+<p>reboot重启系统</p>
+<h1 id="配置网络和远程桌面"><a href="#配置网络和远程桌面" class="headerlink" title="配置网络和远程桌面"></a>配置网络和远程桌面</h1><p>更改启动脚本，添加以下配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">QEMU_BIN=&quot;/usr/bin/qemu-system-x86_64&quot;</span><br><span class="line">VM_IMAGE=&quot;arch/Archlinux.qcow2&quot;</span><br><span class="line">PIDFILE=&quot;arch-vm.pid&quot;</span><br><span class="line">SPICE_PORT=5900</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用前需要删除注释</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">QEMU_BIN \</span></span><br><span class="line"><span class="language-bash">    -name <span class="string">&quot;arch-vm&quot;</span> \</span></span><br><span class="line"><span class="language-bash">    -enable-kvm \</span></span><br><span class="line"><span class="language-bash">    -m 4G \</span></span><br><span class="line"><span class="language-bash">    -smp $(<span class="built_in">nproc</span>) \</span></span><br><span class="line"><span class="language-bash">    -drive file=<span class="variable">$VM_IMAGE</span>,format=qcow2,<span class="keyword">if</span>=virtio \</span></span><br><span class="line"><span class="language-bash">    -drive <span class="keyword">if</span>=pflash,format=raw,<span class="built_in">readonly</span>=on,file=/usr/share/OVMF/OVMF_CODE.fd \</span></span><br><span class="line"><span class="language-bash">    <span class="comment"># 添加网卡</span></span></span><br><span class="line">    -device &quot;virtio-net,netdev=net0,mac=52:54:00:12:34:57&quot; \</span><br><span class="line">    -netdev &quot;user,id=net0,hostfwd=tcp::2223-:22&quot; \</span><br><span class="line">    # 生成pid文件</span><br><span class="line">    -pidfile &quot;$PIDFILE&quot; \</span><br><span class="line">    # 启用远程桌面</span><br><span class="line">    -vga qxl \</span><br><span class="line">    -spice port=$&#123;SPICE_PORT&#125;,addr=0.0.0.0,disable-ticketing=on \</span><br><span class="line">    # 共享剪切板</span><br><span class="line">    -device virtio-serial-pci \</span><br><span class="line">    -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 \</span><br><span class="line">    # 输出音频</span><br><span class="line">    -device intel-hda \</span><br><span class="line">    -device hda-duplex \</span><br><span class="line">    # 其他设置</span><br><span class="line">    -chardev spicevmc,id=spicechannel0,name=vdagent \</span><br><span class="line">    -usbdevice tablet \</span><br><span class="line">    -daemonize</span><br></pre></td></tr></table></figure>
+
+<p>启动虚拟机后输入命令以下命令登录ssh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -p 2223 username@127.0.0.1</span><br></pre></td></tr></table></figure>
+
+<h2 id="下载远程桌面客户端"><a href="#下载远程桌面客户端" class="headerlink" title="下载远程桌面客户端"></a>下载远程桌面客户端</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install virt-manager </span><br></pre></td></tr></table></figure>
+
+<p>或者是前往<a target="_blank" rel="noopener" href="https://virt-manager.org/download.html%E4%B8%8B%E8%BD%BDWindows%E7%89%88">https://virt-manager.org/download.html下载Windows版</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://releases.pagure.org/virt-viewer/virt-viewer-x64-11.0-1.0.msi</span><br></pre></td></tr></table></figure>
+
+<p>双击安装，安装完毕后不会提示完成，需要自行前往C:\Program Files查看软件</p>
+<p>使用remote-viewer进行连接</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">remote-viewer spice://&#123;your IP&#125;:5920</span><br></pre></td></tr></table></figure>
+
+<p>如果一切正常，此时就会显示一个可以交互，音视频正常的系统桌面</p>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>别忘了滚一下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -Sy</span><br></pre></td></tr></table></figure>
+
+<div id="paginator"></div></div><div id="post-footer"><div id="pages" style="justify-content: flex-end"><div class="footer-link" style="width: 50%;right:1px;border-left:1px #fe2 solid"><a href="/fbf5f0eae1ce/">reality协议代理配置 Prev →</a></div></div></div></div><div class="bottom-btn"><div><a class="i-top" id="to-top" onClick="scrolls.scrolltop();" title="To Top" style="opacity: 0; display: none;">∧ </a><a class="i-index" id="to-index" href="#toc-div" title="To Catalog">≡</a><a class="i-color" id="color-mode" onClick="colorMode.change()" title="Change Theme"></a><a onclick="BgmControl()"><svg id="bgm-control" viewBox="0 0 30 34" fill="#18d1ff" style="width: 24px; transition: transform .3s;margin-top: 4px"><path d="M25.998 23.422V11.29h3.999v12.132h-3.999zM19.497 6.234h4.001v22.243h-4.001V6.234zM12.998.867h4v32.978h-4V.867zm-6.5 5.367h4.001v22.243H6.498V6.234zm-6.5 5.056h4v12.132h-4V11.29z"></path></svg><audio id="bgm" src="/audio/bgm.mp3" autoplay loop crossorigin="anonymous"> </audio></a></div></div></article><aside><div id="about"><a href="/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo" style="margin:0;border-radius:0;"></a><h1 id="Dr"><a href="/">Hellagur4225</a></h1><div id="description"><p></p></div></div><div id="aside-block"><div id="toc-div"><h1>Catalog</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BA%8F"><span class="toc-number">1.</span> <span class="toc-text">序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E8%BD%AF%E4%BB%B6%E4%BE%9D%E8%B5%96"><span class="toc-number">2.</span> <span class="toc-text">安装软件依赖</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8qemu%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-number">3.</span> <span class="toc-text">启动qemu虚拟机</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9B%B4%E6%94%B9%E5%88%86%E5%8C%BA%E5%AE%B9%E9%87%8F"><span class="toc-number">4.</span> <span class="toc-text">更改分区容量</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6rootfs%EF%BC%88%E5%A6%82%E6%9E%9C%E9%9C%80%E8%A6%81%E7%9A%84%E8%AF%9D%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">复制rootfs（如果需要的话）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BA%E5%8C%96%E5%86%85%E6%A0%B8%E5%90%AF%E5%8A%A8%E5%8F%82%E6%95%B0"><span class="toc-number">6.</span> <span class="toc-text">固化内核启动参数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9C%E5%92%8C%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2"><span class="toc-number">7.</span> <span class="toc-text">配置网络和远程桌面</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">7.1.</span> <span class="toc-text">下载远程桌面客户端</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%90%8E"><span class="toc-number">8.</span> <span class="toc-text">最后</span></a></li></ol></div></div><footer><nobr>Published with <a target="_blank" rel="noopener" href="http://hexo.io">Hexo</a></nobr><wbr><nobr> Theme <a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknights</a></nobr><wbr><nobr> by <a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas></body></html>
